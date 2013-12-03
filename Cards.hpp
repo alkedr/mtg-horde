@@ -20,6 +20,7 @@ static const Card & card(Card::Id id) {
 
 CREATURE(0,
 	name = "Zombie Token";
+	subtype = "Zombie";
 	power = 3;
 	toughness = 3;
 )
