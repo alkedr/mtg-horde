@@ -6,6 +6,7 @@
 #include "Cards.hpp"
 #include "CardInGame.hpp"
 #include "CardsModel.hpp"
+#include "Decks.hpp"
 
 
 class MainWindow : public QWidget {
@@ -166,20 +167,9 @@ public:
 	}
 
 private:
-	std::vector<Card::Id> library_ = generateLibrary();
+	std::vector<Card::Id> library_ = decks::zombies();
 	int playerHp = 40;
 	int playerPoison = 10;
 	CardsModel cardsModel;
-
-	static std::vector<Card::Id> generateLibrary() {
-		std::vector<Card::Id> res;
-		for (Card::Id i=0; i<42; i++) res.push_back(i);
-		for (Card::Id i=0; i<54; i++) res.push_back(0);
-		for (Card::Id i=0; i<4; i++) res.push_back(1);
-
-		srand((int)time(NULL));
-		std::random_shuffle(res.begin(), res.end());
-		return res;
-	}
 };
 
