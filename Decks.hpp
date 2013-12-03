@@ -30,12 +30,12 @@ static std::vector<Card::Id> generateLibrary(const DeckEntry * deckList, std::si
 }
 
 
-#define DECK(NAME, ...)                                     \
-namespace decks {                                           \
-static std::vector<Card::Id> NAME () {                             \
-	const static _::DeckEntry __deckList[] = { __VA_ARGS__ };    \
-	return generateLibrary(__deckList, sizeof(__deckList) / sizeof(__deckList[0]));   \
-}                                                           \
+#define DECK(NAME, ...)                                                               \
+namespace decks {                                                                     \
+static std::vector<Card::Id> NAME () {                                                \
+	const static _::DeckEntry __deckList[] = { __VA_ARGS__ };                           \
+	return generateLibrary(__deckList, sizeof(__deckList) / sizeof(__deckList[0]));     \
+}                                                                                     \
 }
 
 
