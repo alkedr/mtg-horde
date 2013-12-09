@@ -39,7 +39,7 @@ public:
 	}
 
 	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override {
-		auto cardIndex = index.row();
+		std::size_t cardIndex = static_cast<std::size_t>(index.row());
 		if (role == Qt::DisplayRole) {
 			if (cardIndex == 0) {
 				if (index.column() == 0) return "battlefield";
@@ -63,15 +63,12 @@ public:
 				case 4: return QString::fromStdString(cardsInGame_.at(cardIndex-2).description());
 			}
 		} else if (role == Qt::BackgroundRole) {
-			static QBrush battlefieldBrush(QColor(255, 255, 255));
-			static QBrush graveyardBrush(QColor(200, 200, 200));
-			static QBrush exileBrush(QColor(255, 200, 200));
-			if (cardIndex < 2) return battlefieldBrush;
+			if (cardIndex < 2) return QBrush({255, 255, 255});
 			switch (cardsInGame_.at(cardIndex-2).zone()) {
-				case Zone::BATTLEFIELD: return battlefieldBrush;
-				case Zone::GRAVEYARD: return graveyardBrush;
-				case Zone::EXILE: return exileBrush;
-				default: return QVariant();
+				case Zone::BATTLEFIELD: return QBrush({255, 255, 255});
+				case Zone::GRAVEYARD: return QBrush({200, 200, 200});
+				case Zone::EXILE: return QBrush({255, 200, 200});
+				case Zone::HAND: return QVariant();
 			}
 		}
 		return QVariant();
@@ -97,7 +94,7 @@ public:
 
 		if (row == 0) smallTokensCount += tokenIncrement; else
 		if (row == 1) bigTokensCount += tokenIncrement; else
-			cardsInGame_.at(row-2).setZone(zone);
+			cardsInGame_.at(static_cast<std::size_t>(row)-2).setZone(zone);
 
 		if (smallTokensCount < 0) smallTokensCount = 0;
 		if (bigTokensCount < 0) bigTokensCount = 0;

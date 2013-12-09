@@ -12,7 +12,7 @@ LIBS_CXXFLAGS := $(QT_CXXFLAGS)
 LIBS := $(QT_LIBS)
 
 CXXFLAGS_release := -O2 -s -w
-CXXFLAGS_debug := -ggdb3 -Weverything -Wno-padded -Wno-c++98-compat-pedantic -Wno-unused-member-function -Wno-weak-vtables -Wno-sign-conversion -Wno-c99-extensions
+CXXFLAGS_debug := -ggdb3 -Weverything -Wno-padded -Wno-c++98-compat-pedantic -Wno-weak-vtables
 
 
 .PHONY : all dist clean
