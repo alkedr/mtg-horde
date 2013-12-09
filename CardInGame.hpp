@@ -17,19 +17,24 @@ enum class Zone : uint8_t {
 
 class CardInGame {
 public:
-	CardInGame(Card::Id id, Zone zone) : id_(id), zone_(zone) {
+	CardInGame(Card::Id id, Zone zone = Zone::HAND) : id_(id), zone_(zone) {
 	}
 
-	Card::Id id() const {
-		return id_;
-	}
+	Card::Id id() const { return id_; }
 
-	std::string name() const {
-		return card(id_).name;
-	}
+	std::string name() const { return card(id_).name; }
+	std::string type() const { return card(id_).type; }
 
-	std::string type() const {
-		return card(id_).type;
+	Zone zone() const { return zone_; }
+	void setZone(Zone value) { zone_ = value; }
+
+	std::string description() const { return card(id_).text; }
+
+	bool isToken() const { return (id() < 2); }
+
+	std::string ptStr() const {
+		if (card(id_).type != Card::Type::CREATURE) return "";
+		return std::to_string(card(id_).power) + "/" + std::to_string(card(id_).toughness);
 	}
 
 	std::string zoneStr() const {
@@ -39,23 +44,6 @@ public:
 			case Zone::GRAVEYARD: return "graveyard";
 			case Zone::EXILE: return "exile";
 		}
-	}
-
-	Zone zone() const {
-		return zone_;
-	}
-
-	void setZone(Zone value) {
-		zone_ = value;
-	}
-
-	std::string ptStr() const {
-		if (card(id_).type != Card::Type::CREATURE) return "";
-		return std::to_string(card(id_).power) + "/" + std::to_string(card(id_).toughness);
-	}
-
-	std::string description() const {
-		return card(id_).text;
 	}
 
 private:

@@ -11,7 +11,7 @@ QT_LIBS := $(shell pkg-config --libs Qt5Gui Qt5Widgets)
 LIBS_CXXFLAGS := $(QT_CXXFLAGS)
 LIBS := $(QT_LIBS)
 
-CXXFLAGS_release := -O2 -s -w
+CXXFLAGS_release := -O2 -s -w -NDEBUG
 CXXFLAGS_debug := -ggdb3 -Weverything -Wno-padded -Wno-c++98-compat-pedantic -Wno-weak-vtables
 
 

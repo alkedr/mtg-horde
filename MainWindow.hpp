@@ -31,7 +31,7 @@ public:
 		cardsTable.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 		addShortcut(Qt::Key_C, [this]() {
-			while (library_.back() < 2) {
+			while (!library_.empty() && (library_.back() < 2)) {
 				putCardFromLibraryTo(Zone::BATTLEFIELD);
 			}
 			putCardFromLibraryTo(Zone::BATTLEFIELD);

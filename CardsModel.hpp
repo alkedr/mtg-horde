@@ -16,7 +16,7 @@ public:
 		assert(cardsInGame_.size() < INT_MAX);
 
 		if (parent.isValid()) return 0;
-		return static_cast<int>(cardsInGame_.size() + 2);
+		return static_cast<int>(cardsInGame_.size());
 	}
 
 	virtual int columnCount(const QModelIndex & parent = QModelIndex()) const override {
@@ -42,32 +42,22 @@ public:
 		assert(index.row() >= 0);
 		assert(index.column() >= 0);
 
-		std::size_t cardIndex = static_cast<std::size_t>(index.row());
+		const auto & card = cardsInGame_.at(static_cast<std::size_t>(index.row()));
 		if (role == Qt::DisplayRole) {
-			if (cardIndex == 0) {
-				if (index.column() == 0) return "battlefield";
-				if (index.column() == 1) return QString(card(0).name) + " (" + QString::number(smallTokensCount) + ")";
-				if (index.column() == 2) return "Creature";
-				if (index.column() == 3) return "3/3";
-				if (index.column() == 4) return "";
-			} else if (cardIndex == 1) {
-				if (index.column() == 0) return "battlefield";
-				if (index.column() == 1) return QString(card(1).name) + " (" + QString::number(bigTokensCount) + ")";
-				if (index.column() == 2) return "Creature";
-				if (index.column() == 3) return "6/6";
-				if (index.column() == 4) return "";
-			}
-
 			switch (index.column()) {
-				case 0: return QString::fromStdString(cardsInGame_.at(cardIndex-2).zoneStr());
-				case 1: return QString::fromStdString(cardsInGame_.at(cardIndex-2).name());
-				case 2: return QString::fromStdString(cardsInGame_.at(cardIndex-2).type());
-				case 3: return QString::fromStdString(cardsInGame_.at(cardIndex-2).ptStr());
-				case 4: return QString::fromStdString(cardsInGame_.at(cardIndex-2).description());
+				case 0: return QString::fromStdString(card.zoneStr());
+				case 1:
+					return QString::fromStdString(card.name()) + (
+						(card.id() == 0 ? (" (" + QString::number(smallTokensCount) + ")") : QString()) +
+						(card.id() == 1 ? (" (" + QString::number(  bigTokensCount) + ")") : QString())
+					);
+				case 2: return QString::fromStdString(card.type());
+				case 3: return QString::fromStdString(card.ptStr());
+				case 4: return QString::fromStdString(card.description());
 			}
 		} else if (role == Qt::BackgroundRole) {
-			if (cardIndex < 2) return QBrush({255, 255, 255});
-			switch (cardsInGame_.at(cardIndex-2).zone()) {
+			if (card.isToken()) return QBrush({255, 255, 255});
+			switch (card.zone()) {
 				case Zone::BATTLEFIELD: return QBrush({255, 255, 255});
 				case Zone::GRAVEYARD: return QBrush({200, 200, 200});
 				case Zone::EXILE: return QBrush({255, 200, 200});
@@ -99,7 +89,7 @@ public:
 
 		if (row == 0) smallTokensCount += tokenIncrement; else
 		if (row == 1) bigTokensCount += tokenIncrement; else
-			cardsInGame_.at(static_cast<std::size_t>(row)-2).setZone(zone);
+			cardsInGame_.at(static_cast<std::size_t>(row)).setZone(zone);
 
 		if (smallTokensCount < 0) smallTokensCount = 0;
 		if (bigTokensCount < 0) bigTokensCount = 0;
@@ -110,7 +100,7 @@ public:
 private:
 	int smallTokensCount = 0;
 	int bigTokensCount = 0;
-	std::vector<CardInGame> cardsInGame_;
+	std::vector<CardInGame> cardsInGame_ = { {0, Zone::BATTLEFIELD}, {1, Zone::BATTLEFIELD} };
 
 	void sortCardsInGame() {
 		std::stable_sort(
