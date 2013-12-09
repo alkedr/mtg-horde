@@ -15,13 +15,12 @@ struct DeckEntry {
 };
 
 
-static std::vector<Card::Id> generateLibrary(const DeckEntry * deckList, std::size_t entryCount) {
+template<class ForwardIterator>
+static std::vector<Card::Id> generateLibrary(ForwardIterator begin, ForwardIterator end) {
 	std::vector<Card::Id> res;
-	for (std::size_t i = 0; i < entryCount; i++) {
-		for (uint32_t j = 0; j < deckList[i].count; j++) {
-			res.push_back(deckList[i].cardId);
-		}
-	}
+	std::for_each(begin, end, [&res](const DeckEntry & de) {
+		for (decltype(de.count) i = 0; i < de.count; i++) res.push_back(de.cardId);
+	});
 	std::random_shuffle(res.begin(), res.end());
 	return res;
 }
@@ -34,7 +33,7 @@ static std::vector<Card::Id> generateLibrary(const DeckEntry * deckList, std::si
 namespace decks {                                                                     \
 static std::vector<Card::Id> NAME () {                                                \
 	const static _::DeckEntry __deckList[] = { __VA_ARGS__ };                           \
-	return generateLibrary(__deckList, sizeof(__deckList) / sizeof(__deckList[0]));     \
+	return generateLibrary(std::begin(__deckList), std::end(__deckList));               \
 }                                                                                     \
 }
 

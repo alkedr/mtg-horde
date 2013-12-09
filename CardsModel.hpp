@@ -7,13 +7,16 @@
 #include "Cards.hpp"
 #include <iostream>
 #include <vector>
+#include <cassert>
 
 
 class CardsModel : public QAbstractTableModel {
 public:
 	virtual int rowCount(const QModelIndex & parent = QModelIndex()) const override {
+		assert(cardsInGame_.size() < INT_MAX);
+
 		if (parent.isValid()) return 0;
-		return (int)(cardsInGame_.size() + 2);
+		return static_cast<int>(cardsInGame_.size() + 2);
 	}
 
 	virtual int columnCount(const QModelIndex & parent = QModelIndex()) const override {
@@ -22,23 +25,23 @@ public:
 	}
 
 	virtual QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override {
+		assert(section >= 0);
+
 		if (role != Qt::DisplayRole) return QVariant();
 
 		if (orientation == Qt::Horizontal) {
-			switch (section) {
-				case 0: return QString("zone");
-				case 1: return QString("name");
-				case 2: return QString("type");
-				case 3: return QString("P/T");
-				case 4: return QString("text");
-			}
+			assert(section < 5);
+			static const char * headers[] = { "zone", "name", "type", "P/T", "text" };
+			return headers[section];
 		} else {
 			return QString::number(section+1);
 		}
-		return QVariant();
 	}
 
 	virtual QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override {
+		assert(index.row() >= 0);
+		assert(index.column() >= 0);
+
 		std::size_t cardIndex = static_cast<std::size_t>(index.row());
 		if (role == Qt::DisplayRole) {
 			if (cardIndex == 0) {
@@ -79,7 +82,7 @@ public:
 		if (id == 0) {
 			if (zone == Zone::BATTLEFIELD) smallTokensCount++;
 		} else if (id == 1) {
-			if (zone == Zone:: BATTLEFIELD) bigTokensCount++;
+			if (zone == Zone::BATTLEFIELD) bigTokensCount++;
 		} else {
 			beginInsertRows(QModelIndex(), rowCount(), rowCount());
 			cardsInGame_.emplace_back(id, zone);
@@ -90,6 +93,8 @@ public:
 	}
 
 	void setCardZone(int row, Zone zone) {
+		assert(row >= 0);
+
 		int tokenIncrement = (zone == Zone::BATTLEFIELD) ? 1 : -1;
 
 		if (row == 0) smallTokensCount += tokenIncrement; else
@@ -103,23 +108,17 @@ public:
 	}
 
 private:
+	int smallTokensCount = 0;
+	int bigTokensCount = 0;
+	std::vector<CardInGame> cardsInGame_;
 
 	void sortCardsInGame() {
 		std::stable_sort(
 			std::begin(cardsInGame_),
 			std::end(cardsInGame_),
-			[](const CardInGame & c1, const CardInGame & c2) {
-				if (c1.zone() != c2.zone()) return c1.zone() < c2.zone();
-				return false;
-			}
+			[](const CardInGame & c1, const CardInGame & c2) { return c1.zone() < c2.zone(); }
 		);
-
 		emit dataChanged(index(0, 0), index(rowCount(), columnCount()));
 	}
-
-
-	int smallTokensCount = 0;
-	int bigTokensCount = 0;
-	std::vector<CardInGame> cardsInGame_;
 };
 
