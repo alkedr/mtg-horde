@@ -11,159 +11,48 @@
 
 class MainWindow : public QWidget {
 public:
-	MainWindow() {
+	MainWindow()
+	: QWidget()
+	, cardsTable(this)
+	, hordeLibrarySizeLabel(QString::number(library_.size()), this)
+	, playerHpPoisonLabel(QString::number(playerHp) + "/" + QString::number(playerPoison), this)
+	{
 		auto mainLayout = new QVBoxLayout(this);
-			auto hpLayout = new QHBoxLayout();
-				auto hordeLibrarySizeLabel = new QLabel(QString::number(library_.size()));
-				auto playerHpPoisonLabel = new QLabel(QString::number(playerHp) + "/" + QString::number(playerPoison));
-			auto cardsTable = new QTableView;
+		auto hpLayout = new QHBoxLayout();
 
 		mainLayout->addLayout(hpLayout);
-			hpLayout->addWidget(hordeLibrarySizeLabel);
-			hpLayout->addWidget(playerHpPoisonLabel);
-		mainLayout->addWidget(cardsTable);
+			hpLayout->addWidget(&hordeLibrarySizeLabel);
+			hpLayout->addWidget(&playerHpPoisonLabel);
+		mainLayout->addWidget(&cardsTable);
 
-		cardsTable->setModel(&cardsModel);
-		cardsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-		cardsTable->resizeColumnsToContents();
+		cardsTable.setModel(&cardsModel);
+		cardsTable.setSelectionBehavior(QAbstractItemView::SelectRows);
+		cardsTable.setSelectionMode(QAbstractItemView::SingleSelection);
+		cardsTable.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-		connect(
-			new QShortcut(Qt::Key_C, this),
-			&QShortcut::activated,
-			[this, cardsTable, hordeLibrarySizeLabel]() {
-				while (!library_.empty()) {
-					auto cardId = library_.back();
-					library_.pop_back();
-					cardsModel.addCard(cardId);
-					if (cardId > 1) break;
-				}
-				cardsTable->resizeColumnsToContents();
-				hordeLibrarySizeLabel->setText(QString::number(library_.size()));
+		addShortcut(Qt::Key_C, [this]() {
+			while (library_.back() < 2) {
+				putCardFromLibraryTo(Zone::BATTLEFIELD);
 			}
-		);
+			putCardFromLibraryTo(Zone::BATTLEFIELD);
+		});
 
-		connect(
-			new QShortcut(Qt::Key_M, this),
-			&QShortcut::activated,
-			[this, cardsTable, hordeLibrarySizeLabel]() {
-				if (!library_.empty()) {
-					cardsModel.addCard(library_.back(), Zone::GRAVEYARD);
-					library_.pop_back();
-				}
-				cardsTable->resizeColumnsToContents();
-				hordeLibrarySizeLabel->setText(QString::number(library_.size()));
-			}
-		);
+		addShortcut(Qt::Key_M, [this]() { putCardFromLibraryTo(Zone::GRAVEYARD); });
 
-		connect(
-			new QShortcut(Qt::Key_B, this),
-			&QShortcut::activated,
-			[this, cardsTable]() {
-				QModelIndexList indexes = cardsTable->selectionModel()->selectedRows();
-				for (const auto & index : indexes) {
-					cardsModel.setCardZone(index.row(), Zone::BATTLEFIELD);
-				}
-				cardsTable->resizeColumnsToContents();
-			}
-		);
+		addShortcut(Qt::Key_B, [this]() { putSelectedCardsTo(Zone::BATTLEFIELD); });
+		addShortcut(Qt::Key_G, [this]() { putSelectedCardsTo(Zone::GRAVEYARD); });
+		addShortcut(Qt::Key_E, [this]() { putSelectedCardsTo(Zone::EXILE); });
 
-		connect(
-			new QShortcut(Qt::Key_G, this),
-			&QShortcut::activated,
-			[this, cardsTable]() {
-				QModelIndexList indexes = cardsTable->selectionModel()->selectedRows();
-				for (const auto & index : indexes) {
-					cardsModel.setCardZone(index.row(), Zone::GRAVEYARD);
-				}
-				cardsTable->resizeColumnsToContents();
-			}
-		);
+		addShortcut(Qt::Key_Minus, [this]() { changeHp(-1); });
+		addShortcut(Qt::Key_Equal, [this]() { changeHp(+1); });
+		addShortcut(Qt::Key_Underscore, [this]() { changePoison(-1); });
+		addShortcut(Qt::Key_Plus      , [this]() { changePoison(+1); });
 
-		connect(
-			new QShortcut(Qt::Key_E, this),
-			&QShortcut::activated,
-			[this, cardsTable]() {
-				QModelIndexList indexes = cardsTable->selectionModel()->selectedRows();
-				for (const auto & index : indexes) {
-					cardsModel.setCardZone(index.row(), Zone::EXILE);
-				}
-				cardsTable->resizeColumnsToContents();
-			}
-		);
+		addShortcut(Qt::Key_T  , [this]() { cardsModel.addCard(0); });
+		addShortcut({"Shift+T"}, [this]() { cardsModel.addCard(1); });
 
-		connect(
-			new QShortcut(Qt::Key_Minus, this),
-			&QShortcut::activated,
-			[this, playerHpPoisonLabel]() {
-				playerHp--;
-				playerHpPoisonLabel->setText(QString::number(playerHp) + "/" + QString::number(playerPoison));
-			}
-		);
-
-		connect(
-			new QShortcut(Qt::Key_Equal, this),
-			&QShortcut::activated,
-			[this, playerHpPoisonLabel]() {
-				playerHp++;
-				playerHpPoisonLabel->setText(QString::number(playerHp) + "/" + QString::number(playerPoison));
-			}
-		);
-
-		connect(
-			new QShortcut(Qt::Key_Underscore, this),
-			&QShortcut::activated,
-			[this, playerHpPoisonLabel]() {
-				playerPoison--;
-				playerHpPoisonLabel->setText(QString::number(playerHp) + "/" + QString::number(playerPoison));
-			}
-		);
-
-		connect(
-			new QShortcut(Qt::Key_Plus, this),
-			&QShortcut::activated,
-			[this, playerHpPoisonLabel]() {
-				playerPoison++;
-				playerHpPoisonLabel->setText(QString::number(playerHp) + "/" + QString::number(playerPoison));
-			}
-		);
-
-		connect(
-			new QShortcut(Qt::Key_T, this),
-			&QShortcut::activated,
-			[this, cardsTable]() {
-				cardsModel.addCard(0);
-				cardsTable->resizeColumnsToContents();
-			}
-		);
-
-		connect(
-			new QShortcut(QKeySequence("Shift+T"), this),
-			&QShortcut::activated,
-			[this, cardsTable]() {
-				cardsModel.addCard(1);
-				cardsTable->resizeColumnsToContents();
-			}
-		);
-
-		connect(
-			new QShortcut(Qt::Key_H, this),
-			&QShortcut::activated,
-			[this, playerHpPoisonLabel]() {
-				int deltaHP = QInputDialog::getInt(this, "HP", QString());
-				playerHp += deltaHP;
-				playerHpPoisonLabel->setText(QString::number(playerHp) + "/" + QString::number(playerPoison));
-			}
-		);
-
-		connect(
-			new QShortcut(Qt::Key_P, this),
-			&QShortcut::activated,
-			[this, playerHpPoisonLabel]() {
-				int delta = QInputDialog::getInt(this, "poison", QString());
-				playerPoison += delta;
-				playerHpPoisonLabel->setText(QString::number(playerHp) + "/" + QString::number(playerPoison));
-			}
-		);
+		addShortcut(Qt::Key_H, [this]() { changeHp    (QInputDialog::getInt(this, "HP"    , "")); });
+		addShortcut(Qt::Key_P, [this]() { changePoison(QInputDialog::getInt(this, "poison", "")); });
 	}
 
 private:
@@ -171,5 +60,41 @@ private:
 	int playerHp = 40;
 	int playerPoison = 10;
 	CardsModel cardsModel;
+	QTableView cardsTable;
+	QLabel hordeLibrarySizeLabel;
+	QLabel playerHpPoisonLabel;
+
+
+	template<class F>
+	void addShortcut(QKeySequence keySequence, F f) {
+		connect(new QShortcut(keySequence, this), &QShortcut::activated, f);
+	}
+
+	void putCardFromLibraryTo(Zone zone) {
+		if (library_.empty()) {
+			std::cout << "library is empty" << std::endl;
+		} else {
+			cardsModel.addCard(library_.back(), zone);
+			library_.pop_back();
+			hordeLibrarySizeLabel.setText(QString::number(library_.size()));
+		}
+	}
+
+	void putSelectedCardsTo(Zone zone) {
+		QModelIndexList indexes = cardsTable.selectionModel()->selectedRows();
+		for (const auto & index : indexes) {
+			cardsModel.setCardZone(index.row(), zone);
+		}
+	}
+
+	void changeHp(int difference) {
+		playerHp += difference;
+		playerHpPoisonLabel.setText(QString::number(playerHp) + "/" + QString::number(playerPoison));
+	}
+
+	void changePoison(int difference) {
+		playerPoison += difference;
+		playerHpPoisonLabel.setText(QString::number(playerHp) + "/" + QString::number(playerPoison));
+	}
 };
 
