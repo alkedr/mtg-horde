@@ -48,8 +48,8 @@ public:
 				case 0: return QString::fromStdString(card.zoneStr());
 				case 1:
 					return QString::fromStdString(card.name()) + (
-						(card.id() == 0 ? (" (" + QString::number(smallTokensCount) + ")") : QString()) +
-						(card.id() == 1 ? (" (" + QString::number(  bigTokensCount) + ")") : QString())
+						(card.id() == cardsInGame_[0].id() ? (" (" + QString::number(smallTokensCount) + ")") : QString()) +
+						(card.id() == cardsInGame_[1].id() ? (" (" + QString::number(  bigTokensCount) + ")") : QString())
 					);
 				case 2: return QString::fromStdString(card.type());
 				case 3: return QString::fromStdString(card.ptStr());
@@ -69,9 +69,9 @@ public:
 
 	void addCard(Card::Id id, Zone zone = Zone::BATTLEFIELD) {
 		if ((id < 2) && (zone == Zone::GRAVEYARD)) return;
-		if (id == 0) {
+		if (id == cardsInGame_[0].id()) {
 			if (zone == Zone::BATTLEFIELD) smallTokensCount++;
-		} else if (id == 1) {
+		} else if (id == cardsInGame_[1].id()) {
 			if (zone == Zone::BATTLEFIELD) bigTokensCount++;
 		} else {
 			beginInsertRows(QModelIndex(), rowCount(), rowCount());

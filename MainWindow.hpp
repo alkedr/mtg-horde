@@ -31,7 +31,7 @@ public:
 		cardsTable.horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
 		addShortcut(Qt::Key_C, [this]() {
-			while (!library_.empty() && (library_.back() < 2)) {
+			while (!library_.empty() && (card(library_.back()).isToken())) {
 				putCardFromLibraryTo(Zone::BATTLEFIELD);
 			}
 			putCardFromLibraryTo(Zone::BATTLEFIELD);
@@ -48,8 +48,8 @@ public:
 		addShortcut(Qt::Key_Underscore, [this]() { changePoison(-1); });
 		addShortcut(Qt::Key_Plus      , [this]() { changePoison(+1); });
 
-		addShortcut(Qt::Key_T  , [this]() { cardsModel.addCard(0); });
-		addShortcut({"Shift+T"}, [this]() { cardsModel.addCard(1); });
+		//addShortcut(Qt::Key_T  , [this]() { cardsModel.addCard(0); });
+		//addShortcut({"Shift+T"}, [this]() { cardsModel.addCard(1); });
 
 		addShortcut(Qt::Key_H, [this]() { changeHp    (QInputDialog::getInt(this, "HP"    , "")); });
 		addShortcut(Qt::Key_P, [this]() { changePoison(QInputDialog::getInt(this, "poison", "")); });

@@ -26,6 +26,10 @@ public:
 		static const constexpr char * SORCERY = "Sorcery";
 	};
 
+	bool isToken() const {
+		return (strstr(name, "Token") != nullptr);
+	}
+
 
 	Card() {
 	}
